@@ -1,0 +1,35 @@
+{
+  "subset_name": "ER-Base-Subset-v1",
+  "selection_seed": 20260925,
+  "source_repo": "zwq2018/embodied_reasoner",
+  "local_metadata_root": "/root/pc/Embodied-Omni/embodied_reasoner/data",
+  "output_root": "/root/pc/gpc_dynaloop_storage/datasets/er_base_subset_v1",
+  "scene_split": {
+    "train_offsets": [1, 24],
+    "val_offsets": [25, 27],
+    "test_offsets": [28, 30]
+  },
+  "quotas": {
+    "single_search": {"train": 300, "val": 40, "test": 40},
+    "single_search_from_closerep": {"train": 100, "val": 15, "test": 15},
+    "single_pickup": {"train": 250, "val": 35, "test": 35},
+    "single_pickup_from_closerep": {"train": 90, "val": 15, "test": 15},
+    "pickup_and_put": {"train": 250, "val": 35, "test": 35},
+    "pickup_and_put_in_closerep": {"train": 150, "val": 25, "test": 25},
+    "single_search_navigate_fault": {"train": 40, "val": 8, "test": 8},
+    "single_search_from_closerep_open_fault": {"train": 15, "val": 0, "test": 0},
+    "single_pickup_navigate_fault": {"train": 25, "val": 5, "test": 5},
+    "single_pickup_pickup_fault": {"train": 40, "val": 8, "test": 8},
+    "pickup_and_put_navigate_fault": {"train": 20, "val": 4, "test": 4},
+    "pickup_and_put_pickup_fault": {"train": 20, "val": 4, "test": 4},
+    "pickup_and_put_put_fault": {"train": 25, "val": 5, "test": 5}
+  },
+  "official_test_task_types": [
+    "single_search",
+    "single_search_from_closerep",
+    "single_pickup",
+    "single_pickup_from_closerep",
+    "pickup_and_put",
+    "pickup_and_put_in_closerep"
+  ]
+}
