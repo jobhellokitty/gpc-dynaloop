@@ -1,0 +1,23 @@
+project:
+  name: GPC-DynaLoop
+  root: /root/pc/gpc_dynaloop
+  storage_root: /root/pc/gpc_dynaloop_storage
+
+environment:
+  conda_prefix: /root/pc/conda-envs/gqa-process-consistency
+  vulkan_icd: /etc/vulkan/icd.d/nvidia_icd.json
+  xdg_runtime_dir: /tmp/xdg-runtime-root
+
+reference:
+  embodied_omni_root: /root/pc/Embodied-Omni
+  embodied_reasoner_root: /root/pc/Embodied-Omni/embodied_reasoner
+
+simulator:
+  name: AI2-THOR
+  version: 5.0.0
+  platform: CloudRendering
+  build_commit: f0825767cd50d69f666c7f282e54abfe58f1e917
+  smoke_scene: FloorPlan1
+  width: 300
+  height: 300
+  quality: Low
