@@ -31,12 +31,9 @@ def scene_split(scene, split_config):
         raise ValueError(f"unsupported scene: {scene}")
     offset = (int(match.group(1)) - 1) % 100 + 1
     train_start, train_end = split_config["train_offsets"]
-    val_start, val_end = split_config["val_offsets"]
     test_start, test_end = split_config["test_offsets"]
     if train_start <= offset <= train_end:
         return "train"
-    if val_start <= offset <= val_end:
-        return "val"
     if test_start <= offset <= test_end:
         return "test"
     raise ValueError(f"scene offset outside configured split: {scene}")
@@ -55,16 +52,11 @@ def record_digest(record):
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
-def selection_key(source_index, first_image, seed):
-    payload = f"{seed}:{source_index}:{first_image}".encode()
-    return hashlib.sha256(payload).hexdigest()
-
-
 def build_candidates(records, config):
     candidates = defaultdict(list)
     issues = []
     task_stats = defaultdict(lambda: {"records": 0, "images": 0, "scenes": set()})
-    configured_types = set(config["quotas"])
+    configured_types = set(config["task_types"])
 
     for source_index, record in enumerate(records):
         images = record.get("images") or []
@@ -114,32 +106,13 @@ def build_candidates(records, config):
 
 def select_records(records, config):
     candidates, issues, task_stats = build_candidates(records, config)
-    selected = {"train": [], "val": [], "test": []}
-    shortages = []
-    seed = config["selection_seed"]
-    for task_type, split_quotas in config["quotas"].items():
-        for split, quota in split_quotas.items():
-            pool = sorted(
-                candidates[(task_type, split)],
-                key=lambda item: selection_key(
-                    item["source_index"], item["images"][0], seed
-                ),
-            )
-            chosen = pool[:quota]
-            selected[split].extend(chosen)
-            if len(chosen) < quota:
-                shortages.append(
-                    {
-                        "task_type": task_type,
-                        "split": split,
-                        "requested": quota,
-                        "available": len(pool),
-                        "selected": len(chosen),
-                    }
-                )
+    selected = {"train": [], "test": []}
+    for task_type in config["task_types"]:
+        for split in selected:
+            selected[split].extend(candidates[(task_type, split)])
     for split in selected:
         selected[split].sort(key=lambda item: (item["task_type"], item["scene"], item["source_index"]))
-    return selected, shortages, issues, task_stats
+    return selected, issues, task_stats
 
 
 def write_jsonl(path: Path, records):

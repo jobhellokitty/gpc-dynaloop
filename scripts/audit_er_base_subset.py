@@ -62,29 +62,15 @@ def main():
     output_root = Path(config["output_root"])
     manifest_root = output_root / "manifests"
     train_path = metadata_root / "train_multiturn_9390.json"
-    test_path = metadata_root / "test_809.json"
     records = json.loads(train_path.read_text())
-    official_test = json.loads(test_path.read_text())
 
-    selected, shortages, issues, task_stats = select_records(records, config)
+    selected, issues, task_stats = select_records(records, config)
     for split, items in selected.items():
         write_jsonl(manifest_root / f"{split}.jsonl", items)
-
-    official_types = set(config["official_test_task_types"])
-    official_selected = [
-        {
-            "source_index": index,
-            "source_file": "test_809.json",
-            "task_type": item["tasktype"],
-            "scene": item["scene"],
-            "taskname": item["taskname"],
-            "target_objects": item["target_objects"],
-            "related_objects": item["related_objects"],
-        }
-        for index, item in enumerate(official_test)
-        if item["tasktype"] in official_types
-    ]
-    write_jsonl(manifest_root / "official_test.jsonl", official_selected)
+    for stale_name in ("val.jsonl", "official_test.jsonl"):
+        stale_path = manifest_root / stale_name
+        if stale_path.exists():
+            stale_path.unlink()
 
     revision, remote_files = remote_inventory(config["source_repo"])
     selected_items = [item for items in selected.values() for item in items]
@@ -133,9 +119,7 @@ def main():
     }
     scene_sets = {split: {item["scene"] for item in items} for split, items in selected.items()}
     split_overlap = {
-        "train_val": sorted(scene_sets["train"] & scene_sets["val"]),
         "train_test": sorted(scene_sets["train"] & scene_sets["test"]),
-        "val_test": sorted(scene_sets["val"] & scene_sets["test"]),
     }
     upstream_commit = subprocess.check_output(
         ["git", "-C", "/root/pc/Embodied-Omni", "rev-parse", "HEAD"], text=True
@@ -143,12 +127,19 @@ def main():
     checks = {
         "source_record_count_9390": len(records) == 9390,
         "metadata_records_valid": not issues,
-        "configured_quotas_available": not shortages,
+        "all_configured_task_types_present": all(
+            any(
+                item["task_type"] == task_type
+                for items in selected.values()
+                for item in items
+            )
+            for task_type in config["task_types"]
+        ),
+        "train_and_test_nonempty": all(selected.values()),
         "scene_splits_disjoint": not any(split_overlap.values()),
         "all_archives_exist_remotely": not missing_archives,
         "selective_range_supported": range_probe["accept_ranges"] == "bytes"
         and range_probe["content_length"] == remote_files[range_probe["path"]]["size"],
-        "official_test_nonempty": bool(official_selected),
         "storage_supports_archive_strategy": disk.free >= archive_total + 20 * 1024**3,
         "no_training_images_downloaded": not any(output_root.rglob("*.png"))
         and not any(output_root.rglob("*.zip")),
@@ -163,14 +154,8 @@ def main():
             "huggingface_repo": config["source_repo"],
             "huggingface_revision": revision,
             "train_metadata_sha256": sha256(train_path),
-            "test_metadata_sha256": sha256(test_path),
         },
         "split_summary": split_summary,
-        "official_test_count": len(official_selected),
-        "official_test_task_counts": dict(
-            sorted(Counter(item["task_type"] for item in official_selected).items())
-        ),
-        "shortages": shortages,
         "issues": issues[:100],
         "issue_count": len(issues),
         "split_overlap": split_overlap,

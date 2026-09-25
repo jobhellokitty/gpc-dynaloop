@@ -14,11 +14,10 @@ class ERSubsetTest(unittest.TestCase):
     def test_scene_split_is_room_family_relative(self):
         config = {
             "train_offsets": [1, 24],
-            "val_offsets": [25, 27],
-            "test_offsets": [28, 30],
+            "test_offsets": [25, 30],
         }
         self.assertEqual(scene_split("FloorPlan204", config), "train")
-        self.assertEqual(scene_split("FloorPlan225", config), "val")
+        self.assertEqual(scene_split("FloorPlan225", config), "test")
         self.assertEqual(scene_split("FloorPlan330", config), "test")
 
     def test_image_token_count(self):
