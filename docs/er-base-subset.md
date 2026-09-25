@@ -46,7 +46,7 @@ bash scripts/run_er_predownload_checks.sh
 
 ## 训练适配
 
-正式 SFT 使用 Embodied-Reasoner 指定的 LLaMA-Factory `embodied-reasoner` 分支，一条轨迹仅编码一次并监督其全部 assistant 决策。`GPC-SFT-HE` 作为初始权重，冻结视觉编码器和多模态投影层，只训练语言模型 attention LoRA。
+正式 SFT 使用 Embodied-Reasoner 指定的 LLaMA-Factory `embodied-reasoner` 分支，一条轨迹仅编码一次并监督其全部 assistant 决策。`GPC-SFT-HE` 作为初始权重，冻结视觉编码器和多模态投影层，只训练语言模型 attention LoRA。训练时通过 `new_special_tokens` 注册作者分支所需的 `<|feedback|>`，不修改原始 `GPC-SFT-HE` 目录。
 
 ```bash
 python scripts/export_er_llamafactory_dataset.py

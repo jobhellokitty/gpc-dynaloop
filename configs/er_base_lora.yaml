@@ -2,6 +2,8 @@ model_name_or_path: /root/pc/three_model_release_v1/work/models/GPC-SFT-HE
 image_resolution: 262144
 video_resolution: 16384
 trust_remote_code: true
+new_special_tokens: <|feedback|>
+resize_vocab: true
 
 stage: sft
 do_train: true
