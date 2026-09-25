@@ -43,3 +43,13 @@ bash scripts/run_er_predownload_checks.sh
 ```
 
 必须满足：9,390 条源训练记录可解析、13 类任务均有有效记录、图像标记与引用一致、Train/Test 场景无交集、全部所需归档存在、磁盘预算足够，并且输出目录尚无图像或 ZIP。
+
+## 训练适配
+
+正式 SFT 使用 Embodied-Reasoner 指定的 LLaMA-Factory `embodied-reasoner` 分支，一条轨迹仅编码一次并监督其全部 assistant 决策。`GPC-SFT-HE` 作为初始权重，冻结视觉编码器和多模态投影层，只训练语言模型 attention LoRA。
+
+```bash
+python scripts/export_er_llamafactory_dataset.py
+```
+
+训练配置为 `configs/er_base_lora.yaml`。Step 级索引仅用于数据诊断、单步门禁和后续 Agent Loop，不用于正式全量 SFT。
