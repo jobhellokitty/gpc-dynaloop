@@ -41,10 +41,13 @@ def main():
         "splits": {},
     }
     dataset_info = {}
+    smoke_record = None
 
     for split in ("train", "test"):
         manifest = read_jsonl(DATASET_ROOT / "manifests" / f"{split}.jsonl")
         records = [source_records[item["source_index"]] for item in manifest]
+        if split == "train":
+            smoke_record = min(records, key=lambda record: len(record["images"]))
         output_path = output_root / f"{split}.json"
         output_path.write_text(json.dumps(records, ensure_ascii=False) + "\n")
         name = f"er_base_{split}"
@@ -65,6 +68,19 @@ def main():
             "file": str(output_path),
             "sha256": sha256(output_path),
         }
+
+    smoke_path = output_root / "smoke.json"
+    smoke_path.write_text(json.dumps([smoke_record], ensure_ascii=False) + "\n")
+    dataset_info["er_base_smoke"] = {
+        **dataset_info["er_base_train"],
+        "file_name": smoke_path.name,
+    }
+    report["smoke"] = {
+        "trajectory_count": 1,
+        "image_count": len(smoke_record["images"]),
+        "file": str(smoke_path),
+        "sha256": sha256(smoke_path),
+    }
 
     (output_root / "dataset_info.json").write_text(
         json.dumps(dataset_info, ensure_ascii=False, indent=2) + "\n"

@@ -53,3 +53,10 @@ python scripts/export_er_llamafactory_dataset.py
 ```
 
 训练配置为 `configs/er_base_lora.yaml`。Step 级索引仅用于数据诊断、单步门禁和后续 Agent Loop，不用于正式全量 SFT。
+
+作者分支使用隔离的 `venv --system-site-packages` 环境，共享已验证的 PyTorch/CUDA/FlashAttention，但不会降级或改写现有 GPC conda 环境。
+
+```bash
+bash scripts/setup_er_llamafactory_env.sh
+bash scripts/run_er_base_lf_smoke.sh
+```
